@@ -2,10 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import ytdl from 'ytdl-core';
 import sizeByUrl from "file_size_url";
-import fs from "fs";
 const app = express();
 const units = ['B', 'KB', 'MB', 'GB', 'TB']
-const nameRegex = /^(?!\.)(?!com[0-9]$)(?!con$)(?!lpt[0-9]$)(?!nul$)(?!prn$)[^\|\*\?\\:<>/$"]*[^\.\|\*\?\\:<>/$"]+$/ig;
+const nameRegex = /[:|\\|\/|*|?|\"|<|>|\|]/ig;
 const videoOptions = {
     format: 'mp4',
     quality: "highest",
@@ -30,7 +29,7 @@ async function ytdlRespose2(req, res, ytdlOptions) {
         title = title.replaceAll(nameRegex,"");
         console.log(fileSize);
         res.set("content-length", fileSize.toString());
-        res.attachment(title + "." + ytdlOptions.format);
+        res.attachment((title||"video") + "." + ytdlOptions.format);
         ytdl(URL, ytdlOptions).pipe(res);
     }
     catch (e) {
