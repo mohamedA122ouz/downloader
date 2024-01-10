@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>easy download</title>
+    <script>
+    </script>
+</head>
+
+<body>
+    <label for="download">
+        <input type="text" name="download" id="download">
+        <button onclick="downloadVideo()">video</button>
+        <button onclick="downloadAudio()">audio</button>
+        <br>
+        <p>server in same pc</p>
+        <input type="checkbox" onclick="save(this.checked)">
+    </label>
+    <script>
+        let checkbox = document.querySelector("input[type='checkbox']");
+        (function start(){
+            try{
+                let pc = localStorage.getItem("samePC");
+                checkbox.checked = JSON.parse(pc);
+            }catch{
+                localStorage.setItem("samePC",false);
+                checkbox.checked = false;
+            }
+            addEventListener
+        })();
+        
+        function save(item){
+            try{
+                let pc = localStorage.setItem("samePC",item);
+            }catch{
+                console.warn("saving not working");
+            }
+        }
+        function getValue() {
+            let download = document.querySelector("#download");
+            return download.value;
+        }
+        function base(http, port) {
+            if (checkbox.checked)
+                return `${http}://localhost:${port}/download`;
+            else
+                return `${http}://192.168.1.5:${port}/download`;
+        }
+        function downloadVideo() {
+            let link = base("http", 4000) + "?URL=" + getValue();
+            window.open(link, "blank");
+        }
+        function downloadAudio() {
+            let link = base("http", 4000) + "/audio?URL=" + getValue();
+            window.open(link, "blank");
+        }
+    </script>
+</body>
+
+</html>
