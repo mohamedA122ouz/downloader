@@ -34,6 +34,8 @@ async function ytdlRespose2(req, res, ytdlOptions) {
         console.log(title);
         res.set("content-length", fileSize.toString());
         res.status(200);
+        console.log(res.getHeader());
+        console.log(res.statusCode);
         res.attachment((title || "video") + "." + ytdlOptions.format);
         ytdl(URL, ytdlOptions).pipe(res);
     }

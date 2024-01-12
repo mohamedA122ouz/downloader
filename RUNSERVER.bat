@@ -1,2 +1,2 @@
 @echo off
-node ".\index.js"
+node "E:\git repo\DownloaderServer\index.js"
