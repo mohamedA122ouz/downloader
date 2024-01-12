@@ -18,7 +18,7 @@ const audioOptions = {
     filter: 'audioonly'
 };
 app.use(cors());
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Donwnload server works !!!! at ${port} `);
 });
 async function ytdlRespose2(req, res, ytdlOptions) {
