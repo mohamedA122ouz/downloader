@@ -48,10 +48,12 @@ async function ytdlRespose2(req, res, ytdlOptions) {
         title = title.replaceAll(nameRegex, "");
         console.log(fileSize);
         console.log(title);
+        const tempName = Date.now().toString(36) + ".mp4";
         res.set("content-length", fileSize.toString());
         res.status(200);
         res.attachment((title || "video") + "." + ytdlOptions.format);
-        ytdl.downloadFromInfo(dt).pipe(res);
+        ytdl.downloadFromInfo(dt).pipe(fs.createWriteStream(tempName));
+        fs.createReadStream(tempName).pipe(res);
     }
     catch (e) {
         res.send(`<h1>Error<h1><div>${e}</div>`);
