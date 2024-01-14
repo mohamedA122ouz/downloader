@@ -22,13 +22,15 @@ app.use(cors());
 app.listen(port, '0.0.0.0', () => {
     console.log(`Donwnload server works !!!! at ${port} `);
 });
-function giveATry(tryToDo, handleFailer) {
+function giveATry(res,tryToDo,handleFailer) {
     try {
         tryToDo();
     }
     catch (e) {
         if (!handleFailer) {
             console.error(Error(e));
+            res.status(200);
+            res.send(`<h1>${e}</h1>`);
             return;
         }
         handleFailer(e);
@@ -38,6 +40,7 @@ async function ytdlRespose2(req, res, ytdlOptions) {
     var URL = req.query.URL;
     try {
         let dt = await ytdl.getInfo(URL);
+        console.log(dt.formats[0].qualityLabel);
         let title = dt.videoDetails.title;
         let format = ytdl.chooseFormat(dt.formats, ytdlOptions);
         let fileSize = await sizeByUrl(format.url);
@@ -47,10 +50,8 @@ async function ytdlRespose2(req, res, ytdlOptions) {
         console.log(title);
         res.set("content-length", fileSize.toString());
         res.status(200);
-        // console.log(res.getHeader());
-        // console.log(res.statusCode);
         res.attachment((title || "video") + "." + ytdlOptions.format);
-        ytdl(URL, ytdlOptions).pipe(res);
+        ytdl.downloadFromInfo(dt).pipe(res);
     }
     catch (e) {
         res.send(`<h1>Error<h1><div>${e}</div>`);
@@ -58,17 +59,13 @@ async function ytdlRespose2(req, res, ytdlOptions) {
     }
 }
 app.get("/admin/install/ytdlcore", (req, res) => {
-    giveATry(() => {
-        c.execSync("yarn add ytdl-core", (stdout, stdin, err) => {
-            if (!err) {
-                res.status(200);
-                res.send("<h1>installed</h1>");
-                return;
-            }
-            res.status(200);
-            res.send("<h1>cannot install</h1>");
-        });
+    
+    giveATry(res,() => {
+        c.execSync("npm i ytdl-core@latest");
+        res.status(200);
+        res.send("<h1>installed</h1>");
     });
+
 });
 app.get('/download', (req, res) => {
     ytdlRespose2(req, res, videoOptions);
