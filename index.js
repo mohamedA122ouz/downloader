@@ -40,7 +40,7 @@ async function ytdlRespose2(req, res, ytdlOptions) {
     var URL = req.query.URL;
     try {
         let dt = await ytdl.getInfo(URL);
-        console.log(dt.formats[0].qualityLabel);
+        console.log(dt.formats);
         let title = dt.videoDetails.title;
         let format = ytdl.chooseFormat(dt.formats, ytdlOptions);
         let fileSize = await sizeByUrl(format.url);
@@ -48,12 +48,12 @@ async function ytdlRespose2(req, res, ytdlOptions) {
         title = title.replaceAll(nameRegex, "");
         console.log(fileSize);
         console.log(title);
-        const tempName = Date.now().toString(36) + ".mp4";
         res.set("content-length", fileSize.toString());
         res.status(200);
+        // console.log(res.getHeader());
+        // console.log(res.statusCode);
         res.attachment((title || "video") + "." + ytdlOptions.format);
-        ytdl.downloadFromInfo(dt).pipe(fs.createWriteStream(tempName));
-        fs.createReadStream(tempName).pipe(res);
+        ytdl(URL, ytdlOptions).pipe(res);
     }
     catch (e) {
         res.send(`<h1>Error<h1><div>${e}</div>`);
@@ -69,11 +69,38 @@ app.get("/admin/install/ytdlcore", (req, res) => {
     });
 
 });
+async function ytdlRespose1(req, res, ytdlOptions) {
+    var URL = req.query.URL;
+    try {
+        let dt = await ytdl.getInfo(URL);
+        console.log(dt.formats[0].qualityLabel);
+        let title = dt.videoDetails.title;
+        let format = ytdl.chooseFormat(dt.formats, ytdlOptions);
+        let fileSize = await sizeByUrl(format.url);
+        fileSize = parseFloat(fileSize) * (1024 ** units.indexOf(fileSize.split(' ')[1]));
+        title = title.replaceAll(nameRegex, "");
+        console.log(fileSize);
+        console.log(title);
+        const tempName = Date.now().toString(36) + ".mp4";
+        res.set("content-length", fileSize.toString());
+        res.status(200);
+        res.attachment((title || "video") + "." + ytdlOptions.format);
+        ytdl.downloadFromInfo(dt,ytdlOptions).pipe(fs.createWriteStream("./" + tempName)).once("close",()=>{
+            fs.createReadStream(path.resolve("./"+tempName)).pipe(res).once("close",()=>{
+                fs.unlinkSync(path.resolve("./"+tempName));
+            });
+        });
+    }
+    catch (e) {
+        res.send(`<h1>Error<h1><div>${e}</div>`);
+        console.log("this is the problem ::\n", e);
+    }
+}
 app.get('/download', (req, res) => {
-    ytdlRespose2(req, res, videoOptions);
+    ytdlRespose1(req, res, videoOptions);
 });
 app.get('/download/audio', (req, res) => {
-    ytdlRespose2(req, res, audioOptions);
+    ytdlRespose1(req, res, audioOptions);
 });
 app.get('/home', (req, res) => {
     let file = path.resolve("./easyWay.html");
@@ -89,5 +116,4 @@ app.get("/test", (req, res) => {
         res.set("content-lenght", (fs.statSync(path.resolve("./test.mp4")).size).toFixed(0));
         fs.createReadStream(path.resolve("./test.mp4")).pipe(res);
     });
-
 });
