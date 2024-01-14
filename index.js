@@ -3,6 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import ytdl from 'ytdl-core';
 import sizeByUrl from "file_size_url";
+import c from "child_process";
 import path from "path";
 const app = express();
 const units = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -21,6 +22,18 @@ app.use(cors());
 app.listen(port, '0.0.0.0', () => {
     console.log(`Donwnload server works !!!! at ${port} `);
 });
+function giveATry(tryToDo, handleFailer) {
+    try {
+        tryToDo();
+    }
+    catch (e) {
+        if (!handleFailer) {
+            console.error(Error(e));
+            return;
+        }
+        handleFailer(e);
+    }
+}
 async function ytdlRespose2(req, res, ytdlOptions) {
     var URL = req.query.URL;
     try {
@@ -44,7 +57,11 @@ async function ytdlRespose2(req, res, ytdlOptions) {
         console.log("this is the problem ::\n", e);
     }
 }
-
+app.get("/admin/install/ytdlcore", (req, res) => {
+    giveATry(() => {
+        c.execSync("yarn add ytdl-core");
+    });
+});
 app.get('/download', (req, res) => {
     ytdlRespose2(req, res, videoOptions);
 });
@@ -57,14 +74,13 @@ app.get('/home', (req, res) => {
     console.log(path.join(port.toString(), "./easyWay.html"));
     res.sendFile(file);
 });
-app.get("/test",(req,res)=>{
-    try{
-
+app.get("/test", (req, res) => {
+    giveATry(() => {
         console.log(path.resolve("./test.mp4"));
+        console.log(fs.statSync(path.resolve("./test.mp4")).size);
         res.attachment("test.mp4");
-        res.set("content-lenght",fs.statSync(path.resolve("./test.mp4")).size);
+        res.set("content-lenght", (fs.statSync(path.resolve("./test.mp4")).size).toFixed(0));
         fs.createReadStream(path.resolve("./test.mp4")).pipe(res);
-    }catch(e){
-        console.error(e);
-    }
+    });
+
 });
