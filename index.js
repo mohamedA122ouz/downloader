@@ -59,7 +59,15 @@ async function ytdlRespose2(req, res, ytdlOptions) {
 }
 app.get("/admin/install/ytdlcore", (req, res) => {
     giveATry(() => {
-        c.execSync("yarn add ytdl-core");
+        c.execSync("yarn add ytdl-core", (stdout, stdin, err) => {
+            if (!err) {
+                res.status(200);
+                res.send("<h1>installed</h1>");
+                return;
+            }
+            res.status(200);
+            res.send("<h1>cannot install</h1>");
+        });
     });
 });
 app.get('/download', (req, res) => {
