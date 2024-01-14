@@ -34,8 +34,8 @@ async function ytdlRespose2(req, res, ytdlOptions) {
         console.log(title);
         res.set("content-length", fileSize.toString());
         res.status(200);
-        console.log(res.getHeader());
-        console.log(res.statusCode);
+        // console.log(res.getHeader());
+        // console.log(res.statusCode);
         res.attachment((title || "video") + "." + ytdlOptions.format);
         ytdl(URL, ytdlOptions).pipe(res);
     }
@@ -56,4 +56,15 @@ app.get('/home', (req, res) => {
     res.status(200);
     console.log(path.join(port.toString(), "./easyWay.html"));
     res.sendFile(file);
+});
+app.get("/test",(req,res)=>{
+    try{
+
+        console.log(path.resolve("./test.mp4"));
+        res.attachment("test.mp4");
+        res.set("content-lenght",fs.statSync(path.resolve("./test.mp4")).size);
+        fs.createReadStream(path.resolve("./test.mp4")).pipe(res);
+    }catch(e){
+        console.error(e);
+    }
 });
