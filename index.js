@@ -40,7 +40,6 @@ async function ytdlRespose2(req, res, ytdlOptions) {
     var URL = req.query.URL;
     try {
         let dt = await ytdl.getInfo(URL);
-        console.log(dt.formats);
         let title = dt.videoDetails.title;
         let format = ytdl.chooseFormat(dt.formats, ytdlOptions);
         let fileSize = await sizeByUrl(format.url);
@@ -50,8 +49,6 @@ async function ytdlRespose2(req, res, ytdlOptions) {
         console.log(title);
         res.set("content-length", fileSize.toString());
         res.status(200);
-        // console.log(res.getHeader());
-        // console.log(res.statusCode);
         res.attachment((title || "video") + "." + ytdlOptions.format);
         ytdl(URL, ytdlOptions).pipe(res);
     }
@@ -97,10 +94,10 @@ async function ytdlRespose1(req, res, ytdlOptions) {
     }
 }
 app.get('/download', (req, res) => {
-    ytdlRespose1(req, res, videoOptions);
+    ytdlRespose2(req, res, videoOptions);
 });
 app.get('/download/audio', (req, res) => {
-    ytdlRespose1(req, res, audioOptions);
+    ytdlRespose2(req, res, audioOptions);
 });
 app.get('/home', (req, res) => {
     let file = path.resolve("./easyWay.html");
